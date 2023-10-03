@@ -1,137 +1,104 @@
 # Use the latest version of the official Ubuntu image as the base image
-# FROM ubuntu:latest
-# # FROM python:3.11.5-slim
-# # RUN apt-get update && apt-get install -y \
-# # software-properties-common
-# RUN apt update && apt install -y software-properties-common
-
-# RUN add-apt-repository -y ppa:apptainer/ppa
-# RUN apt update && apt install -y python-is-python3 default-jdk apptainer
-
-# Use the latest version of the official Ubuntu image as the base image
 FROM ubuntu:latest
 
-# Set maintainer label
-LABEL maintainer="jm4279@cumc.columbia.edu"
-
-# Install Java
-RUN apt-get update && \
-    apt-get install -y openjdk-11-jdk \
-    curl wget && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN apt update && apt install -y software-properties-common && add-apt-repository -y ppa:apptainer/ppa && apt update && apt install -y python-is-python3 apptainer
-
-# Set the JAVA_HOME environment variable
-ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
-
-# Optionally, you can set the default command for the container
-CMD ["bash"]
-
-
-
-# FROM rust:1.72.0
-# # WORKDIR /usr/src/myapp
-# WORKDIR /usr/local/
-# RUN pwd
-# RUN git clone --depth 1 --branch v0.11.0 https://github.com/stjude-rust-labs/fq.git
-# WORKDIR /usr/local/fq
-# RUN pwd
-# RUN cargo install --locked --path .
-# # ENV PATH="/user/local/fq:$PATH"
-# # COPY . .
-# # RUN cargo install --path .
-
-# FROM python:3.11.5-slim
-# FROM rust:1.72.0-bullseye
-# RUN mkdir -p /user/local/fq
-# RUN mkdir -p /opt/bin/fq
-# COPY --from=0 /usr/local/fq /opt/bin/fq
-
-# RUN cargo --help
-# ENV PATH="/usr/local/fq:$PATH"
-# ENV PATH="/opt/bin/fq/bin:$PATH"
-# RUN /user/local/fq/fq
-#
-
 # Set the maintainer label
-# LABEL maintainer="jm4279@cumc.columbia.edu"
-# # for easy upgrade later. ARG variables only persist during image build
-# ARG SAMTOOLSVER=1.18
-# ARG R_VERSION=4.0.4
-# ARG SALMON_VERSION=1.10.0
-# ENV DEBIAN_FRONTEND=noninteractive 
+LABEL maintainer="jm4279@cumc.columbia.edu"
+# for easy upgrade later. ARG variables only persist during image build
+ARG SAMTOOLSVER=1.18
+ARG R_VERSION=4.0.4
+ARG SALMON_VERSION=1.10.0
+ENV DEBIAN_FRONTEND=noninteractive 
 
-# # RUN apt update && apt install -y --no-install-recommends python-is-python3 r-base-core=${R_VERSION} r-base-dev=${R_VERSION}
-# RUN apt update && apt install -y python-is-python3 #--no-install-recommends 
-# # RUN apt update && apt install -y --no-install-recommends python-is-python3 r-base r-base-dev
-# # RUN java -version
-# # Update the package list and install curl and git
-# RUN apt-get update && apt-get install -y \
-#   apt-transport-https \
-#   autoconf \
-#   bedtools \
-#   build-essential \
-#   bzip2 \
-#   ca-certificates \
-#   curl \
-#   g++ \
-#   gawk \
-#   gcc \
-#   git \
-#   gnupg \
-#   gnuplot \
-#   make \
-#   nq \
-#   perl \ 
-#   software-properties-common \
-#   unzip \
-#   wget && rm -rf /var/lib/apt/lists/*
+# RUN apt update && apt install -y --no-install-recommends python-is-python3 r-base-core=${R_VERSION} r-base-dev=${R_VERSION}
+RUN apt update && apt install -y python-is-python3 r-base r-base-dev
+# RUN java -version
+# Update the package list and install curl and git
+RUN apt-get update && apt-get install -y \
+  apt-transport-https \
+  autoconf \
+  bedtools \
+  build-essential \
+  bzip2 \
+  ca-certificates \
+  curl \
+  g++ \
+  gawk \
+  gcc \
+  git \
+  gnupg \
+  gnuplot \
+  libboost-all-dev \
+  libncurses5-dev \
+  libbz2-dev \
+  liblzma-dev \
+  libcurl4 \
+  libxml2-dev \
+  libssl-dev \
+  littler \
+  make \
+  nq \
+  openjdk-17-jdk \ 
+  openjdk-17-jre \ 
+  perl \ 
+  software-properties-common \
+  unzip \
+  wget \
+  zlib1g-dev  && rm -rf /var/lib/apt/lists/*
 
-#   # libboost-all-dev \
-#   # libncurses5-dev \
-#   # libbz2-dev \
-#   # liblzma-dev \
-#   # libcurl4 \
-#   # libxml2-dev \
-#   # libssl-dev \
-#   # littler \
-# # \
-# #   zlib1g-dev  
-#   # openjdk-17-jdk \ 
-#   # openjdk-17-jre \ 
+  # clean \
 
-# RUN add-apt-repository -y ppa:apptainer/ppa
-# RUN apt update && apt install -y default-jdk apptainer
-# #   # clean \
+# libcurl4-gnutls-dev \
+# libcurl4-openssl-dev \
 
-# # libcurl4-gnutls-dev \
-# # libcurl4-openssl-dev \
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python get-pip.py
 
-# RUN wget https://bootstrap.pypa.io/get-pip.py
-# RUN python get-pip.py
+# install conda
+# Install miniconda
+ENV CONDA_DIR /opt/conda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda
 
-# # install conda
-# # Install miniconda
-# ENV CONDA_DIR /opt/conda
-# RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
-#     /bin/bash ~/miniconda.sh -b -p /opt/conda
+# Put conda in path so we can use conda activate
+ENV PATH=$CONDA_DIR/bin:$PATH
 
-# # Put conda in path so we can use conda activate
-# ENV PATH=$CONDA_DIR/bin:$PATH
+# install bioconda
+RUN conda config --add channels defaults
+RUN conda config --add channels bioconda
+RUN conda config --add channels conda-forge
+RUN conda config --set channel_priority strict
 
-# # install bioconda
-# RUN conda config --add channels defaults
-# RUN conda config --add channels bioconda
-# RUN conda config --add channels conda-forge
-# RUN conda config --set channel_priority strict
+# Update pip to latest version
+RUN python -m pip install --upgrade pip
+
+# Update pip to latest version
+RUN pip install nf-core
+
+# install nextflow
+WORKDIR /usr/local/
+RUN mkdir nextflow_directory && cd nextflow_directory
+RUN curl -s https://get.nextflow.io | bash
+RUN mv nextflow /usr/local/bin
+RUN chmod +x /usr/local/bin/nextflow
+# # ENV PATH /usr/local/nextflow_directory:$PATH
+# ENV PATH="/usr/local/nextflow_directory:$PATH"
+
+# install apptainer
+RUN apt update && apt install -y software-properties-common && add-apt-repository -y ppa:apptainer/ppa && apt update && apt install -y apptainer
+
+# download pipeline
+WORKDIR /usr/local/
+RUN mkdir /usr/local/singularity_images
+RUN mkdir /usr/local/nf-core-rnaseq
+# RUN nextflow run hello
+ENV NXF_SINGULARITY_CACHEDIR=/usr/local/singularity_images
+RUN  nf-core download rnaseq -r 3.12.0 --outdir /usr/local/nf-core-rnaseq --container-system singularity --compress none -d -u copy --force
+
+
 
 # # install fq
 # RUN conda install fq=0.11.0
 
-# # Update pip to latest version
-# RUN python -m pip install --upgrade pip
 
 # # Install dependencies
 # COPY requirements.txt requirements.txt
@@ -252,9 +219,8 @@ CMD ["bash"]
 # # RUN conda install -y -c bioconda ucsc-bedgraphtobigwig=${BEDGRAPHTOBIGWIG_VERSION}
 # RUN conda install -y ucsc-bedgraphtobigwig=${BEDGRAPHTOBIGWIG_VERSION}
 
-# Set an environment variable
+# # Set an environment variable
 # ENV MY_ENV_VARIABLE=value
 
-# # When the container is started, run the bash shell by default
-# CMD ["/bin/bash"]
-
+# When the container is started, run the bash shell by default
+CMD ["/bin/bash"]
