@@ -16,7 +16,8 @@ LABEL maintainer="jm4279@cumc.columbia.edu"
 
 # Install Java
 RUN apt-get update && \
-    apt-get install -y openjdk-11-jdk && \
+    apt-get install -y openjdk-11-jdk \
+    curl wget && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -26,7 +27,7 @@ RUN apt update && apt install -y software-properties-common && add-apt-repositor
 ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
 
 # Optionally, you can set the default command for the container
-CMD java -version
+CMD ["bash"]
 
 
 
