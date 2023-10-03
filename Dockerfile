@@ -158,7 +158,65 @@ RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v${SALMON_VERSI
 ENV PATH="/usr/local/salmon-latest_linux_x86_64/bin:$PATH"
 # Set the working directory inside the container
 WORKDIR /app
-RUN java -version
+
+#install string tie
+ARG STRINGTIE_VERSION=2.2.1
+WORKDIR /usr/local/
+RUN cd /usr/local/
+# RUN wget http://ccb.jhu.edu/software/stringtie/dl/stringtie-${STRINGTIE_VERSION}.tar.gz
+# RUN tar xvfz ./stringtie-${STRINGTIE_VERSION}.tar.gz
+# RUN cd stringtie-${STRINGTIE_VERSION}
+# RUN make release
+# RUN conda install -c bioconda stringtie
+# RUN git clone https://github.com/gpertea/stringtie
+# RUN cd stringtie
+# RUN make release
+RUN wget https://github.com/gpertea/stringtie/releases/download/v${STRINGTIE_VERSION}/stringtie-${STRINGTIE_VERSION}.Linux_x86_64.tar.gz
+RUN tar xvfz stringtie-${STRINGTIE_VERSION}.Linux_x86_64.tar.gz
+ENV PATH="/usr/local/stringtie-${STRINGTIE_VERSION}.Linux_x86_64:$PATH"
+
+#INSTALL multiqc
+WORKDIR /usr/local/
+ARG MULTIQC_VERSION=1.16
+RUN pip install multiqc
+
+#INSTALL RSeQC
+WORKDIR /usr/local/
+ARG RSEQC_VERSION=5.0.1
+RUN pip install RSeQC
+
+#INSTALL dupRadar (should move up to other R when optimizing)
+WORKDIR /usr/local/
+ARG DUPRADAR=1.30.0
+RUN Rscript -e "BiocManager::install(c('dupRadar'))"
+
+#INSTALL picard
+RUN conda config --add channels defaults
+RUN conda config --add channels bioconda
+RUN conda config --add channels conda-forge
+RUN conda config --set channel_priority strict
+WORKDIR /usr/local/
+ARG PICARD_VERSION=3.0.0
+# RUN mamba install -y picard=${PICARD_VERSION}
+RUN conda install -y picard=${PICARD_VERSION}
+# RUN conda install -c "bioconda/label/cf201901" picard
+
+
+#update conda
+# RUN conda update -n base -c defaults conda
+# RUN conda update -y conda
+
+#install bedgraphtobigwig
+RUN conda config --add channels defaults
+RUN conda config --add channels bioconda
+RUN conda config --add channels conda-forge
+RUN conda config --set channel_priority strict
+ARG BEDGRAPHTOBIGWIG_VERSION=377
+WORKDIR /usr/local/
+# RUN conda install -c "bioconda/label/cf201901" ucsc-bedgraphtobigwig
+# RUN conda install -y -c bioconda ucsc-bedgraphtobigwig=${BEDGRAPHTOBIGWIG_VERSION}
+RUN conda install -y ucsc-bedgraphtobigwig=${BEDGRAPHTOBIGWIG_VERSION}
+
 # Set an environment variable
 ENV MY_ENV_VARIABLE=value
 
