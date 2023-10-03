@@ -1,7 +1,28 @@
 # Use the latest version of the official Ubuntu image as the base image
-# FROM ubuntu:latest
+FROM ubuntu:latest
+
+# FROM rust:1.72.0
+# # WORKDIR /usr/src/myapp
+# WORKDIR /usr/local/
+# RUN pwd
+# RUN git clone --depth 1 --branch v0.11.0 https://github.com/stjude-rust-labs/fq.git
+# WORKDIR /usr/local/fq
+# RUN pwd
+# RUN cargo install --locked --path .
+# # ENV PATH="/user/local/fq:$PATH"
+# # COPY . .
+# # RUN cargo install --path .
+
 # FROM python:3.11.5-slim
-FROM rust:1.72.0-bullseye
+# FROM rust:1.72.0-bullseye
+# RUN mkdir -p /user/local/fq
+# RUN mkdir -p /opt/bin/fq
+# COPY --from=0 /usr/local/fq /opt/bin/fq
+
+# RUN cargo --help
+# ENV PATH="/usr/local/fq:$PATH"
+# ENV PATH="/opt/bin/fq/bin:$PATH"
+# RUN /user/local/fq/fq
 #
 
 # Set the maintainer label
@@ -10,7 +31,7 @@ LABEL maintainer="jm4279@cumc.columbia.edu"
 ARG SAMTOOLSVER=1.18
 ARG R_VERSION=4.0.4
 ARG SALMON_VERSION=1.10.0
-
+ENV DEBIAN_FRONTEND=noninteractive 
 
 # RUN apt update && apt install -y --no-install-recommends python-is-python3 r-base-core=${R_VERSION} r-base-dev=${R_VERSION}
 RUN apt update && apt install -y --no-install-recommends python-is-python3 r-base r-base-dev
@@ -48,11 +69,31 @@ RUN apt-get update && apt-get install -y \
   wget \
   zlib1g-dev  && rm -rf /var/lib/apt/lists/*
 
-RUN wget https://bootstrap.pypa.io/get-pip.py
-RUN python get-pip.py
+  # clean \
 
 # libcurl4-gnutls-dev \
 # libcurl4-openssl-dev \
+
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python get-pip.py
+
+# install conda
+# Install miniconda
+ENV CONDA_DIR /opt/conda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda
+
+# Put conda in path so we can use conda activate
+ENV PATH=$CONDA_DIR/bin:$PATH
+
+# install bioconda
+RUN conda config --add channels defaults
+RUN conda config --add channels bioconda
+RUN conda config --add channels conda-forge
+RUN conda config --set channel_priority strict
+
+# install fq
+RUN conda install fq=0.11.0
 
 # Update pip to latest version
 RUN python -m pip install --upgrade pip
@@ -110,18 +151,6 @@ RUN cd /opt && wget https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v
 # RUN Rscript /opt/qualimap_v2.3/scripts/installDependencies.r
 
 ENV PATH="/opt/qualimap_v2.3:$PATH"
-
-# Install dependencies and Rust
- RUN cargo --help
-
-# install fq
-WORKDIR /usr/local/
-RUN pwd
-RUN git clone --depth 1 --branch v0.11.0 https://github.com/stjude-rust-labs/fq.git
-WORKDIR /usr/local/fq
-RUN pwd
-RUN cargo install --locked --path .
-ENV PATH="/user/local/fq:$PATH"
 
 # install salmon
 WORKDIR /usr/local/
